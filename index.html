@@ -127,8 +127,29 @@
       const filtered = allData.filter(row =>
         Object.values(row).some(val => String(val).toLowerCase().includes(q))
       );
-      renderTable(filtered);
-    }
+      try {
+            await fetch(SCRIPT_URL, {
+              method: 'POST',
+              mode: 'no-cors', // เพิ่มบรรทัดนี้เพื่อแก้ปัญหาเบราว์เซอร์บล็อกข้ามโดเมน
+              headers: {
+                'Content-Type': 'text/plain;charset=utf-8' // ป้องกันระบบติด Preflight check
+              },
+              body: JSON.stringify(payload)
+            });
+
+            alert('บันทึกข้อมูลเรียบร้อยแล้ว');
+            document.getElementById('dataForm').reset();
+            
+            // หน่วงเวลา 1.5 วินาทีเพื่อให้ Google Sheets บันทึกเสร็จก่อนดึงตารางใหม่
+            setTimeout(() => {
+              loadData();
+            }, 1500);
+          } catch (err) {
+            alert('เกิดข้อผิดพลาดในการบันทึก: ' + err.message);
+          } finally {
+            btn.disabled = false;
+            btn.innerText = 'บันทึกข้อมูล';
+          }
 
     document.getElementById('dataForm').addEventListener('submit', async (e) => {
       e.preventDefault();
